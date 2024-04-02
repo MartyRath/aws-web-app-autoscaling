@@ -1,0 +1,11 @@
+# Key pair
+*.pem
+
+# Ignore VScode project files
+.vscode/
+
+# Environment variables
+.env
+
+# Backup files
+*~
