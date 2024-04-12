@@ -9,3 +9,11 @@
 
 # Backup files
 *~
+
+# Terraform files
+terraform*
+*.terraform
+.terraform*
+
+# Hide gitignore
+.gitignore
