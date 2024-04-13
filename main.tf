@@ -1,22 +1,8 @@
-terraform {
-  required_providers {
-    aws = {
-      source  = "hashicorp/aws"
-      version = "~> 5.0"
-    }
-  }
-
-  required_version = ">= 1.0.0"
-}
-
-# Defining provider
-provider "aws" {
-  region = "us-east-1"
-}
-
+####################################################################
 # VPC creation using module
 module "vpc" {
   source = "terraform-aws-modules/vpc/aws"
+  version = "5.7.1"
 
   name = "first-VPC"
   cidr = "10.0.0.0/16"
@@ -35,3 +21,6 @@ module "vpc" {
     Environment = "dev"
   }
 }
+
+################################################################
+# Security Groups
