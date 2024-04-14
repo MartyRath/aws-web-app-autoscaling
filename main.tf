@@ -17,6 +17,9 @@ module "vpc" {
   public_subnet_names = ["public_subnet_1", "public_subnet_2", "public_subnet_3"]
   private_subnet_names = ["private_subnet_1", "private_subnet_2", "private_subnet_3"]
 
+  # Auto-assigns public IPv4 address for instances launched in public subnets
+  map_public_ip_on_launch = true
+
   # Enabling and NAT gateway in just one availability zone for private subnets
   enable_nat_gateway = true
   single_nat_gateway = true
@@ -27,8 +30,8 @@ module "vpc" {
   }
 }
 
-################################################################
-# Security groups
+###################SECURITY GROUPS#############################################
+
 # Web server security group for instances in public subnets.
 # Allows http from any IP address
 resource "aws_security_group" "web_server_sg" {
