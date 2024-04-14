@@ -17,7 +17,7 @@ module "vpc" {
   public_subnet_names = ["public_subnet_1", "public_subnet_2", "public_subnet_3"]
   private_subnet_names = ["private_subnet_1", "private_subnet_2", "private_subnet_3"]
 
-  # Enabling and NAT gateway in just one availability zone for private subnets to route their Internet traffic through
+  # Enabling and NAT gateway in just one availability zone. Private subnets will route their Internet traffic through this NAT gateway
   enable_nat_gateway = true
   single_nat_gateway = true
 
