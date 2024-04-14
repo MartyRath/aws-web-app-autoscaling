@@ -3,7 +3,7 @@
 # Defining ec2
 
 # Get most recent Amazon ami
-data "aws_ami" "most_recent_ami" {
+data "aws_ami" "most_recent_amazon_ami" {
   most_recent      = true
   owners = ["amazon"]
 
@@ -13,4 +13,17 @@ data "aws_ami" "most_recent_ami" {
   }
 
 }
+
+# Ec2 instance to be used as template
+resource "aws_instance" "mainInstance" {
+    ami = data.aws_ami.most_recent_amazon_ami.id
+    instance_type = "t2.nano"
+    subnet_id = module.vpc.public_subnets[0]
+    vpc_security_group_ids = [aws_security_group.web_server_sg.id]
+
+    tags = {
+        Name = "mainInstance"
+    }
+}
+
 
