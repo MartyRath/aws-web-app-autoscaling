@@ -24,6 +24,9 @@ module "vpc" {
   enable_nat_gateway = true
   single_nat_gateway = true
 
+  # Disable creation of default security group
+  manage_default_security_group = false
+
   tags = {
     Terraform = "true"
     Environment = "dev"
