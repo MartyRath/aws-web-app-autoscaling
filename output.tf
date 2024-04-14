@@ -1,0 +1,1 @@
+# Use to output data such as ec2 public ip or id
