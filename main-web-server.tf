@@ -14,7 +14,7 @@ data "aws_ami" "most_recent_amazon_ami" {
 
 }
 
-# EC2 instance to be used as template for AMI
+# EC2 instance to be used as template for custom AMI
 resource "aws_instance" "main_web_server" {
     ami = data.aws_ami.most_recent_amazon_ami.id
     instance_type = "t2.nano"
@@ -24,6 +24,7 @@ resource "aws_instance" "main_web_server" {
     # Update OS and install/enable/start Apache web server
     user_data = <<-EOF
     #!/bin/bash
+    yum update -y
     yum install httpd -y
     systemctl enable httpd
     systemctl start httpd
@@ -32,7 +33,16 @@ resource "aws_instance" "main_web_server" {
     tags = {
         Name = "Main Web Server"
     }
+}
 
+# Custom AMI creation from main web server instance
+resource "aws_ami_from_instance" "custom_ami" {
+  name = "custom_ami"
+  source_instance_id = aws_instance.main_web_server.id
+
+  tags = {
+        Name = "Custom Web Server AMI"
+    }
 }
 
 
