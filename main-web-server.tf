@@ -14,16 +14,27 @@ data "aws_ami" "most_recent_amazon_ami" {
 
 }
 
-# Ec2 instance to be used as template
-resource "aws_instance" "mainInstance" {
+# EC2 instance to be used as template for AMI
+resource "aws_instance" "main_web_server" {
     ami = data.aws_ami.most_recent_amazon_ami.id
     instance_type = "t2.nano"
     subnet_id = module.vpc.public_subnets[0]
     vpc_security_group_ids = [aws_security_group.web_server_sg.id]
 
+    # Update OS and install/enable/start Apache web server
+    user_data = <<-EOF
+    #!/bin/bash
+    yum install httpd -y
+    systemctl enable httpd
+    systemctl start httpd
+    EOF
+
     tags = {
-        Name = "mainInstance"
+        Name = "Main Web Server"
     }
+
 }
+
+
 
 
