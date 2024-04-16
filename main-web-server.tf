@@ -93,9 +93,6 @@ resource "aws_lb" "test_lb" {
   internal           = false
   subnets            = module.vpc.public_subnets # Public subnet ids
   security_groups    = [aws_security_group.web_server_sg.id]
-
-  # Stops terraform deleting load balancer
-  enable_deletion_protection = true
 }
 
 #########################LISTENER##################################
