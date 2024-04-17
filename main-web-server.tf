@@ -21,23 +21,10 @@ resource "aws_instance" "main_web_server" {
     instance_type = "t2.nano"
     subnet_id = module.vpc.public_subnets[0] # Creates instance in first available VPC subnet
     vpc_security_group_ids = [aws_security_group.web_server_sg.id]
+    iam_instance_profile = "LabInstanceProfile" # To be used to push custom metrics to CloudWatch
 
-    # Update OS and install/enable/start Apache web server
-    user_data = <<-EOF
-    #!/bin/bash
-    yum update -y
-    yum install httpd -y
-    systemctl enable httpd
-    systemctl start httpd
-
-    # Adding web page with instnace metadata
-    echo "<b>Instance ID:</b> " > /var/www/html/id.html
-    TOKEN=`curl -X PUT "http://169.254.169.254/latest/api/token" \
-    -H "X-aws-ec2-metadata-token-ttl-seconds: 21600"`
-    curl -H "X-aws-ec2-metadata-token: $TOKEN" \
-    http://169.254.169.254/latest/meta-data/instance-id/ >> /var/www/html/id.html
-
-    EOF
+    # Running scripts to install/enable/start Apache web servers, and push custom metrics to CloudWatch
+    user_data = var.web_server_script
 
     tags = {
         Name = "Main Web Server"
@@ -60,7 +47,7 @@ resource "aws_ami_from_instance" "custom_ami" {
 # Creation of web server instance launch template
 resource "aws_launch_template" "web_server_template" {
   name_prefix   = "web_server_" # Creates a unique name but with this prefix
-  image_id      = aws_ami_from_instance.custom_ami.id
+  image_id      = aws_ami_from_instance.custom_ami.id # Uses custom AMI
   instance_type = "t2.nano"
   vpc_security_group_ids = [aws_security_group.web_server_sg.id]
 
