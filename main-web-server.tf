@@ -24,7 +24,8 @@ resource "aws_instance" "main_web_server" {
     iam_instance_profile = "LabInstanceProfile" # To be used to push custom metrics to CloudWatch
 
     # Running scripts to install/enable/start Apache web servers, and push custom metrics to CloudWatch
-    user_data = var.web_server_script
+ 
+    user_data = base64encode(var.push_metrics)
 
     tags = {
         Name = "Main Web Server"
