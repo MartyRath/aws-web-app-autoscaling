@@ -121,7 +121,7 @@ resource "aws_lb_listener" "http_listener" {
 }
 
 ##############################AUTO-SCALING GROUP#################################
-# Creates
+# Creates auto-scaling group
 resource "aws_autoscaling_group" "web_server_asg" {
   name                      = "web-server-asg"
   max_size                  = 3
@@ -142,6 +142,30 @@ resource "aws_autoscaling_group" "web_server_asg" {
     value = "Auto-scaled Instance"
     propagate_at_launch = true
   }
-
   }
 
+####################################AUTO-SCALING POLICIES#############################################
+# Create simple(default) scaling policy
+resource "aws_autoscaling_policy" "scale_out_high_CPU_asp" {
+  name                   = "scale-out-high-CPU-asp"
+  scaling_adjustment     = 1 # Adds one instance
+  adjustment_type        = "ChangeInCapacity" # Changes how many instances running
+  cooldown               = 30 # Default 300 secs
+  autoscaling_group_name = aws_autoscaling_group.web_server_asg.name
+}
+
+# Alarm triggered when CPU usage exceeds 40% for 1 minute. No SNS set up
+resource "aws_cloudwatch_metric_alarm" "high_CPU_alarm" {
+  alarm_name                = "high-CPU-alarm"
+  comparison_operator       = "GreaterThanOrEqualToThreshold"
+  evaluation_periods        = 2 # Two checks before triggering
+  metric_name               = "CPUUtilization"
+  namespace                 = "AWS/EC2"
+  period                    = 60 # 1 minute
+  statistic                 = "Average"
+  threshold                 = 40 # CPU usage percentage
+  alarm_description         = "Alarm triggered when CPU usage exceeds 40% for 1 minute"
+
+  # Attaches to scale out on high CPU autoscaling policy
+  alarm_actions = [aws_autoscaling_policy.scale_out_high_CPU_asp.arn]
+}
