@@ -63,15 +63,20 @@ resource "aws_ami_from_instance" "custom_ami" {
 }
 
 ##########################LAUNCH TEMPLATE#############################
-# Creation of web server instance launch template
+# Creation of web server instance launch template. No key pair added
 resource "aws_launch_template" "web_server_template" {
   name_prefix   = "web_server_" # Creates a unique name but with this prefix
   image_id      = aws_ami_from_instance.custom_ami.id # Uses custom AMI
   instance_type = "t2.nano"
-  vpc_security_group_ids = [aws_security_group.web_server_sg.id]
+  vpc_security_group_ids = [aws_security_group.web_server_sg.id] # Define security group
 
   # Same user data as main web server ec2 instance
   user_data = aws_instance.main_web_server.user_data
+
+  # Enables detailed monitoring every minute instead of 5 mins
+  monitoring {
+    enabled = true
+  }
 
   tag_specifications {
     resource_type = "instance"
@@ -114,4 +119,29 @@ resource "aws_lb_listener" "http_listener" {
     target_group_arn = aws_lb_target_group.web_server_tg.arn
   }
 }
+
+##############################AUTO-SCALING GROUP#################################
+# Creates
+resource "aws_autoscaling_group" "web_server_asg" {
+  name                      = "web-server-asg"
+  max_size                  = 3
+  min_size                  = 1
+  desired_capacity          = 2 # Set to two as one is made to create ami
+  vpc_zone_identifier       = module.vpc.public_subnets # Public subnet ids
+  target_group_arns = [aws_lb_target_group.web_server_tg.arn] # Attach to load balancer target group
+  health_check_grace_period = 30 # Default 300
+  metrics_granularity = "1Minute" # Enables group metrics within CloudWatch
+
+  launch_template {
+    id      = aws_launch_template.web_server_template.id
+    version = "$Latest"
+  }
+
+  tag {
+    key = "Name"
+    value = "Auto-scaled Instance"
+    propagate_at_launch = true
+  }
+
+  }
 
