@@ -37,8 +37,13 @@ module "vpc" {
 }
 
 ###################### 2. Security Groups #############################################
+# 1. Web Server SG
+# 2. Bastion SG
+# 3. Database SG
+# 4. Node SG
+
 # Web server security group for instances in public subnets.
-# Allows HTTP and HTTPS traffic from any IP address
+# Allows HTTP, HTTPS and custom TCP traffic from any IP address
 resource "aws_security_group" "web_server_sg" {
   name        = "web-server-sg"
   description = "Security group for web servers"
@@ -56,6 +61,14 @@ resource "aws_security_group" "web_server_sg" {
   ingress {
     from_port   = 443
     to_port     = 443
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  # Allows custom TCP for Node app (port 3000)
+  ingress {
+    from_port   = 3000
+    to_port     = 3000
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
