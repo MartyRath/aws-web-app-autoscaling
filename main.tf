@@ -1,6 +1,8 @@
-# Description: Creation of a VPC with public and private subnets.
-#              Creation of security groups.
+# Contents:
+# 1. VPC Module (including subnets)
+# 2. Security Groups
 
+######################## 1. VPC Module (including subnets) ######################################
 # VPC creation module with public and private subnets in three availability zones with one NAT gateway
 module "vpc" {
   source = "terraform-aws-modules/vpc/aws"
@@ -33,8 +35,7 @@ module "vpc" {
   }
 }
 
-###################SECURITY GROUPS#############################################
-
+###################### 2. Security Groups #############################################
 # Web server security group for instances in public subnets.
 # Allows http from any IP address
 resource "aws_security_group" "web_server_sg" {
@@ -85,7 +86,7 @@ resource "aws_security_group" "bastion_sg" {
   }
 }
 
-# For instances in private subnets. 
+# Database security group for instances in private subnets. 
 # Allows SSH from Bastion. Allows SQL from web server. 
 resource "aws_security_group" "database_sg" {
   name        = "database-sg"
