@@ -1,7 +1,11 @@
-# Step 1 and Step 2
-# Description: Creation and configuration of a “master” instance of a web application.
-#              Creation of a custom AMI based on your master instance
+# Assignment Steps 1 & 2
+# Contents:
+# 1. Get most recent Amazon AMI
+# 2. Main/master Instance
+# 3. Custom AMI
 
+
+################### 1. Get most recent Amazon AMI ##################################################
 # Get most recent Amazon ami
 data "aws_ami" "most_recent_amazon_ami" {
   most_recent      = true
@@ -15,6 +19,7 @@ data "aws_ami" "most_recent_amazon_ami" {
 
 }
 
+#################### 2. Main/master Instance ######################################################
 # EC2 instance to be used for custom ami, launch template
 resource "aws_instance" "main_web_server" {
     ami = data.aws_ami.most_recent_amazon_ami.id
@@ -52,7 +57,8 @@ resource "aws_instance" "main_web_server" {
     # Add create before destroy?
 }
 
-# Custom AMI creation from main web server instance
+####################### 3. Custom AMI ############################################################
+# Custom AMI based on main web server instance
 resource "aws_ami_from_instance" "custom_ami" {
   name = "custom_ami"
   source_instance_id = aws_instance.main_web_server.id
@@ -62,37 +68,4 @@ resource "aws_ami_from_instance" "custom_ami" {
     }
 }
 
-##########################TARGET GROUP#######################################
-# Creating an instance target group to be used with application load balancer
-resource "aws_lb_target_group" "web_server_tg" {
-  name     = "web-server-tg"
-  port     = 80
-  protocol = "HTTP"
-  target_type = "instance"
-  vpc_id   = module.vpc.vpc_id #ID of custom VPC
-}
-
-##########################APPLICATION LOAD BALANCER#################################
-# Application load balancer
-resource "aws_lb" "application_lb" {
-  name               = "application-lb"
-  load_balancer_type = "application"
-  internal           = false
-  subnets            = module.vpc.public_subnets # Public subnet ids
-  security_groups    = [aws_security_group.web_server_sg.id]
-}
-
-#########################LISTENER##################################
-# Listener for HTTP traffic
-resource "aws_lb_listener" "http_listener" {
-  load_balancer_arn = aws_lb.application_lb.arn
-  port              = "80"
-  protocol          = "HTTP"
-
-  # Forward to target group
-  default_action {
-    type             = "forward"
-    target_group_arn = aws_lb_target_group.web_server_tg.arn
-  }
-}
 

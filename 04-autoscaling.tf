@@ -1,3 +1,4 @@
+# Assignment Step 4 (Autoscaling) & Step 5
 # Contents:
 # 1. Launch Template
 # 2. Autoscaling Group
@@ -58,6 +59,7 @@ resource "aws_autoscaling_group" "web_server_asg" {
     version = "$Latest"
   }
 
+  # Adds timestamp to autoscaled instance names
   tag {
     key = "Name"
     value = "Autoscaled Instance ${formatdate("HH:MM:ss", timestamp())}"
