@@ -38,7 +38,7 @@ module "vpc" {
 
 ###################### 2. Security Groups #############################################
 # Web server security group for instances in public subnets.
-# Allows http from any IP address
+# Allows HTTP and HTTPS traffic from any IP address
 resource "aws_security_group" "web_server_sg" {
   name        = "web-server-sg"
   description = "Security group for web servers"
@@ -48,6 +48,14 @@ resource "aws_security_group" "web_server_sg" {
   ingress {
     from_port   = 80
     to_port     = 80
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  # Allows HTTPS traffic (port 443)
+  ingress {
+    from_port   = 443
+    to_port     = 443
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
