@@ -40,8 +40,6 @@ module "vpc" {
 # 1. Web Server SG
 # 2. Bastion SG
 # 3. Database SG
-# 4. Node SG
-
 # Web server security group for instances in public subnets.
 # Allows HTTP, HTTPS and custom TCP traffic from any IP address
 resource "aws_security_group" "web_server_sg" {

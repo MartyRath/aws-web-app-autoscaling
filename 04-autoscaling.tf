@@ -12,28 +12,6 @@ resource "aws_launch_template" "web_server_template" {
   instance_type = "t2.nano"
   vpc_security_group_ids = [aws_security_group.web_server_sg.id] # Define security group
 
-  # Same user data as main web server ec2 instance
-  user_data = base64encode(<<-EOF
-      #!/bin/bash
-      # Update OS
-      yum update -y
-
-      # Install Apache web server
-      yum install httpd -y
-
-      # Enable and start Apache
-      systemctl enable httpd
-      systemctl start httpd
-
-      # Add webpage with instance metadata
-      echo "<b>Instance ID:</b> " > /var/www/html/id.html
-      TOKEN=`curl -X PUT "http://169.254.169.254/latest/api/token" \
-      -H "X-aws-ec2-metadata-token-ttl-seconds: 21600"`
-      curl -H "X-aws-ec2-metadata-token: $TOKEN" \
-      http://169.254.169.254/latest/meta-data/instance-id/ >> /var/www/html/id.html
-      EOF
-      )
-
   # Enables detailed monitoring every minute instead of 5 mins
   monitoring {
     enabled = true
