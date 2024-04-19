@@ -63,7 +63,7 @@ resource "aws_ami_from_instance" "custom_ami" {
 }
 
 ##########################LAUNCH TEMPLATE#############################
-# Creation of web server instance launch template. No key pair added
+# Creation of web server instance launch template. No key pair added.
 resource "aws_launch_template" "web_server_template" {
   name_prefix   = "web_server_" # Creates a unique name but with this prefix
   image_id      = aws_ami_from_instance.custom_ami.id # Uses custom AMI
@@ -71,7 +71,26 @@ resource "aws_launch_template" "web_server_template" {
   vpc_security_group_ids = [aws_security_group.web_server_sg.id] # Define security group
 
   # Same user data as main web server ec2 instance
-  user_data = aws_instance.main_web_server.user_data
+  user_data = base64encode(<<-EOF
+      #!/bin/bash
+      # Update OS
+      yum update -y
+
+      # Install Apache web server
+      yum install httpd -y
+
+      # Enable and start Apache
+      systemctl enable httpd
+      systemctl start httpd
+
+      # Add webpage with instance metadata
+      echo "<b>Instance ID:</b> " > /var/www/html/id.html
+      TOKEN=`curl -X PUT "http://169.254.169.254/latest/api/token" \
+      -H "X-aws-ec2-metadata-token-ttl-seconds: 21600"`
+      curl -H "X-aws-ec2-metadata-token: $TOKEN" \
+      http://169.254.169.254/latest/meta-data/instance-id/ >> /var/www/html/id.html
+      EOF
+      )
 
   # Enables detailed monitoring every minute instead of 5 mins
   monitoring {

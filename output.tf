@@ -8,3 +8,8 @@ output "instance_public_ip" {
   description = "Public IP of EC2 Instance"
   value = aws_instance.main_web_server.public_ip
 }
+
+output "load_balancer_dns_name" {
+  description = "Load Balancer DNS Name"
+  value = aws_lb.application_lb.dns_name
+}
