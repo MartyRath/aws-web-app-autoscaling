@@ -53,8 +53,6 @@ resource "aws_instance" "main_web_server" {
   tags = {
     Name = "Main Web Server"
   }
-
-  # Add create before destroy?
 }
 
 ####################### 3. Custom AMI ############################################################

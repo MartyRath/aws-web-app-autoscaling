@@ -4,7 +4,7 @@
 # 2. Security Groups
 
 ######################## 1. VPC Module (including subnets) ######################################
-# VPC creation module with public and private subnets in three availability zones with one NAT gateway
+# Creates VPC, subnets, custom route tables, internet gateway, NAT gateway, Network ACL
 module "vpc" {
   source = "terraform-aws-modules/vpc/aws"
 
@@ -14,7 +14,7 @@ module "vpc" {
   # Availability zones to be used
   azs = ["us-east-1a", "us-east-1b", "us-east-1c"]
 
-  # Creating three public and three private subnets
+  # Creating three public and three private subnets in three availability zones
   private_subnets      = ["10.0.1.0/24", "10.0.2.0/24", "10.0.3.0/24"]
   public_subnets       = ["10.0.101.0/24", "10.0.102.0/24", "10.0.103.0/24"]
   public_subnet_names  = ["public_subnet_1", "public_subnet_2", "public_subnet_3"]
@@ -67,6 +67,14 @@ resource "aws_security_group" "web_server_sg" {
   ingress {
     from_port   = 3000
     to_port     = 3000
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  # Allows SSH (port 22)
+  ingress {
+    from_port   = 22
+    to_port     = 22
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
