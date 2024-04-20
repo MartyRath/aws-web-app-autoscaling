@@ -12,6 +12,8 @@ resource "aws_launch_template" "web_server_template" {
   instance_type          = "t2.nano"
   vpc_security_group_ids = [aws_security_group.web_server_sg.id] # Define security group
 
+  user_data = base64encode(var.web_server_script)
+
   # Enables detailed monitoring every minute instead of 5 mins
   monitoring {
     enabled = true
