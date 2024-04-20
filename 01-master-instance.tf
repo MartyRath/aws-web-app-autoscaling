@@ -8,12 +8,12 @@
 ################### 1. Get most recent Amazon AMI ##################################################
 # Get most recent Amazon ami
 data "aws_ami" "most_recent_amazon_ami" {
-  most_recent      = true
-  owners = ["amazon"]
+  most_recent = true
+  owners      = ["amazon"]
 
   # Filter AMI search to include keyterms, using globbing for updated criteria
   filter {
-    name = "name"
+    name   = "name"
     values = ["al2023-ami-2023*x86_64"]
   }
 
@@ -22,15 +22,15 @@ data "aws_ami" "most_recent_amazon_ami" {
 #################### 2. Main/master Instance ######################################################
 # EC2 instance to be used for custom ami, launch template
 resource "aws_instance" "main_web_server" {
-    ami = data.aws_ami.most_recent_amazon_ami.id
-    instance_type = "t2.nano"
-    subnet_id = module.vpc.public_subnets[0] # Creates instance in first available VPC subnet
-    vpc_security_group_ids = [aws_security_group.web_server_sg.id]
-    iam_instance_profile = "LabInstanceProfile" # To be used to push custom metrics to CloudWatch
+  ami                    = data.aws_ami.most_recent_amazon_ami.id
+  instance_type          = "t2.nano"
+  subnet_id              = module.vpc.public_subnets[0] # Creates instance in first available VPC subnet
+  vpc_security_group_ids = [aws_security_group.web_server_sg.id]
+  iam_instance_profile   = "LabInstanceProfile" # To be used to push custom metrics to CloudWatch
 
-    # Running scripts to install/enable/start Apache web servers, and push custom metrics to CloudWatch
- 
-    user_data = <<-EOF
+  # Running scripts to install/enable/start Apache web servers, and push custom metrics to CloudWatch
+
+  user_data = <<-EOF
       #!/bin/bash
       # Update OS
       yum update -y
@@ -50,22 +50,22 @@ resource "aws_instance" "main_web_server" {
       http://169.254.169.254/latest/meta-data/instance-id/ >> /var/www/html/id.html
       EOF     
 
-    tags = {
-        Name = "Main Web Server"
-    }
+  tags = {
+    Name = "Main Web Server"
+  }
 
-    # Add create before destroy?
+  # Add create before destroy?
 }
 
 ####################### 3. Custom AMI ############################################################
 # Custom AMI based on main web server instance
 resource "aws_ami_from_instance" "custom_ami" {
-  name = "custom_ami"
+  name               = "custom_ami"
   source_instance_id = aws_instance.main_web_server.id
 
   tags = {
-        Name = "Custom Web Server AMI"
-    }
+    Name = "Custom Web Server AMI"
+  }
 }
 
 

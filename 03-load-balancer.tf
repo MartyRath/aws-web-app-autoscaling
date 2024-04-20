@@ -7,11 +7,11 @@
 ########################## 1. Target Group ######################################################
 # Creating an instance target group to be used with application load balancer
 resource "aws_lb_target_group" "web_server_tg" {
-  name     = "web-server-tg"
-  port     = 80
-  protocol = "HTTP"
+  name        = "web-server-tg"
+  port        = 80
+  protocol    = "HTTP"
   target_type = "instance"
-  vpc_id   = module.vpc.vpc_id #ID of custom VPC
+  vpc_id      = module.vpc.vpc_id #ID of custom VPC
 }
 
 ########################## 2. Application Load Balancer ###################################

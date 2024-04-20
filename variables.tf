@@ -1,17 +1,17 @@
 variable "instance_name" {
-    description = "Name tag of EC2 Instance"
-    type        = string
-    default     = "NewInstance"
+  description = "Name tag of EC2 Instance"
+  type        = string
+  default     = "NewInstance"
 }
 
 variable "ec2_instance_type" {
-    description = "AWS EC2 instance type"
-    type = string
-    default = "t2.nano"
+  description = "AWS EC2 instance type"
+  type        = string
+  default     = "t2.nano"
 }
 
 variable "web_server_script" {
-    default = <<-EOF
+  default = <<-EOF
       #!/bin/bash
       # Update OS
       yum update -y
@@ -34,7 +34,7 @@ variable "web_server_script" {
 
 # Pushing metrics to mem.sh on Instane then to CloudWatch
 variable "push_metrics" {
-    default = <<-EOF
+  default = <<-EOF
     #!/bin/bash
     echo "Running custom metrics script"
 
