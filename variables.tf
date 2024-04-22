@@ -57,6 +57,10 @@ variable "template_script" {
       TCP_CONN=$(netstat -an | wc -l)
       TCP_CONN_PORT_80=$(netstat -an | grep 80 | wc -l)
       IO_WAIT=$(iostat | awk 'NR==4 {print $5}')
+      # disk free in human readable mode from root. Extract the second line, fifth column
+      DISK_USAGE=$(df -h / | awk 'NR==2{print $5}')
+      # Number of http processes currently running
+      HTTPD_PROCESSES=$(ps -A | grep -c httpd)
 
       # Added error handling for AWS CLI commands
       if ! aws cloudwatch put-metric-data --metric-name memory-usage --dimensions Instance=$INSTANCE_ID --namespace "Custom" --value $USEDMEMORY; then
@@ -70,6 +74,14 @@ variable "template_script" {
       fi
       if ! aws cloudwatch put-metric-data --metric-name IO_WAIT --dimensions Instance=$INSTANCE_ID --namespace "Custom" --value $IO_WAIT; then
           echo "Error pushing IO wait metric to CloudWatch"
+      fi
+      # Disk usage
+      if ! aws cloudwatch put-metric-data --metric-name DISK_USAGE --dimensions Instance=$INSTANCE_ID --namespace "Custom" --value $DISK_USAGE; then
+          echo "Error pushing disk usage metric to CloudWatch"
+      fi
+      # HTTPD (Apache) processes 
+      if ! aws cloudwatch put-metric-data --metric-name HTTPD_PROCESSES --dimensions Instance=$INSTANCE_ID --namespace "Custom" --value $HTTPD_PROCESSES; then
+          echo "Error pushing HTTPD processes metric to CloudWatch"
       fi
     }
 
