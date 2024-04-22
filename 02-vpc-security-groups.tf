@@ -142,3 +142,24 @@ resource "aws_security_group" "database_sg" {
     Environment = "dev"
   }
 }
+
+# Mongo security group
+resource "aws_security_group" "mongo_sg" {
+  name        = "mongo-sg"
+  description = "Security group for mongo servers"
+  vpc_id      = module.vpc.vpc_id
+
+  # Allow Mongo
+  ingress {
+    from_port       = 27017
+    to_port         = 27017
+    protocol    = "tcp"
+    # Only allow access from web server group, node app
+    security_groups = [aws_security_group.web_server_sg.id]
+  }
+
+  tags = {
+    Name        = "mongo-sg"
+    Environment = "dev"
+  }
+}
