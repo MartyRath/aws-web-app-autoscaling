@@ -17,6 +17,8 @@ USEDMEMORY=$(free -m | awk 'NR==2{printf "%.2f\t", $3*100/$2 }')
 TCP_CONN=$(netstat -an | wc -l)
 TCP_CONN_PORT_80=$(netstat -an | grep 80 | wc -l)
 IO_WAIT=$(iostat | awk 'NR==4 {print $5}')
+PROCESS_COUNT=$(ps aux | wc -l)
+
 
 # Added error handling for AWS CLI commands
 if ! aws cloudwatch put-metric-data --metric-name memory-usage --dimensions Instance=$INSTANCE_ID --namespace "2304Custom" --value $USEDMEMORY; then
