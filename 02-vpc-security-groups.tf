@@ -143,13 +143,21 @@ resource "aws_security_group" "database_sg" {
   }
 }
 
-# Mongo security group
+# Mongo security group allows ssh from bastion and mongo traffic from node app.
 resource "aws_security_group" "mongo_sg" {
   name        = "mongo-sg"
   description = "Security group for mongo servers"
   vpc_id      = module.vpc.vpc_id
 
-  # Allow Mongo
+  # Allow SSH from Bastion
+  ingress {
+    from_port       = 22
+    to_port         = 22
+    protocol        = "tcp"
+    security_groups = [aws_security_group.bastion_sg.id]
+  }
+
+  # Allow Mongo traffic from web server
   ingress {
     from_port       = 27017
     to_port         = 27017
