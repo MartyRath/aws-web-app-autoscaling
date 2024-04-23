@@ -1,3 +1,4 @@
+# Step 6, 7 - Generates test traffic to the load balancer to show effectiveness and autoscaling
 #!/bin/bash
 
 # Prompt user to enter the DNS name of the load balancer
