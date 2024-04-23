@@ -47,6 +47,13 @@ resource "aws_security_group" "web_server_sg" {
   description = "Security group for web servers"
   vpc_id      = module.vpc.vpc_id
 
+  ingress {
+    from_port       = 22
+    to_port         = 22
+    protocol        = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
   # Allows HTTP traffic (port 80)
   ingress {
     from_port   = 80

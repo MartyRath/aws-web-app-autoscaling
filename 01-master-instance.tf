@@ -30,7 +30,7 @@ resource "aws_instance" "main_web_server" {
 
   # Running scripts to install/enable/start Apache web servers, and push custom metrics to CloudWatch
 
-  user_data = var.web_server_script
+  user_data = file("${path.module}/web_server.sh")
 
   tags = {
     Name = "Main Web Server"

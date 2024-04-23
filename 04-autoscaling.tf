@@ -10,11 +10,8 @@
 resource "aws_launch_template" "web_server_template" {
   image_id               = aws_ami_from_instance.custom_ami.id # Uses custom AMI
   instance_type          = "t2.nano"
-  vpc_security_group_ids = [aws_security_group.web_server_sg.id] # Define security group
-
-  user_data = base64encode(var.template_script
-  )
-  
+  vpc_security_group_ids = [aws_security_group.web_server_sg.id] # Define security grou
+  key_name = "firstLabKey"
   # Enables detailed monitoring every minute instead of 5 mins
   monitoring {
     enabled = true
@@ -23,6 +20,8 @@ resource "aws_launch_template" "web_server_template" {
   iam_instance_profile {
     name = "LabInstanceProfile"
   }
+
+  user_data = filebase64("${path.module}/push_metrics.sh")
 
 }
 
