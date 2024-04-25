@@ -40,13 +40,15 @@ module "vpc" {
 # 1. Web Server SG
 # 2. Bastion SG
 # 3. Database SG
+
 # Web server security group for instances in public subnets.
-# Allows HTTP, HTTPS and custom TCP traffic from any IP address
+# Allows SSH, HTTP, HTTPS and custom TCP traffic from any IP address
 resource "aws_security_group" "web_server_sg" {
   name        = "web-server-sg"
   description = "Security group for web servers"
   vpc_id      = module.vpc.vpc_id
 
+  # Allows SSH traffic
   ingress {
     from_port       = 22
     to_port         = 22
@@ -150,18 +152,21 @@ resource "aws_security_group" "database_sg" {
   }
 }
 
+############################MONGO#############################
 # Mongo security group allows ssh from bastion and mongo traffic from node app.
 resource "aws_security_group" "mongo_sg" {
   name        = "mongo-sg"
   description = "Security group for mongo servers"
   vpc_id      = module.vpc.vpc_id
 
-  # Allow SSH from Bastion
+  # Allow SSH from anywhere / Bastion
   ingress {
     from_port       = 22
     to_port         = 22
     protocol        = "tcp"
-    security_groups = [aws_security_group.bastion_sg.id]
+    cidr_blocks = ["0.0.0.0/0"]
+    # Can just allow from bastion
+    #security_groups = [aws_security_group.bastion_sg.id]
   }
 
   # Allow Mongo traffic from web server
@@ -169,7 +174,7 @@ resource "aws_security_group" "mongo_sg" {
     from_port       = 27017
     to_port         = 27017
     protocol    = "tcp"
-    # Only allow access from web server group, node app
+    # Only allow access from web server security group, node app
     security_groups = [aws_security_group.web_server_sg.id]
   }
 
