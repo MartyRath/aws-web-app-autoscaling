@@ -1,6 +1,8 @@
 #!/bin/bash
+# Description: Step 7 - View the Apache access log of instances to show that the 
+#              load is distributed across more than one web server
 
-# Prompt user to enter the DNS name of the load balancer
+# Prompt user to enter IP address of instance
 read -p "Enter the IP address of the instance: " IP_ADDRESS
 
 echo "Here is the log for $IP_ADDRESS"
