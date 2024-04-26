@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Write the script to a file
+# Write the custom metrics script to a file
 cat << 'EOF' > /home/ec2-user/custom_metrics.sh
 #!/bin/bash
 
