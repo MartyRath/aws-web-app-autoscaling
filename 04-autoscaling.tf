@@ -21,7 +21,11 @@ resource "aws_launch_template" "web_server_template" {
     name = "LabInstanceProfile"
   }
 
-  user_data = filebase64("${path.module}/push_metrics.sh")
+  user_data = base64encode(<<-EOF
+  #!/bin/bash
+  su - ec2-user -c 'cd playtime; npm run start'
+  EOF
+  )
 
 }
 

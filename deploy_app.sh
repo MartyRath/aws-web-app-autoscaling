@@ -1,4 +1,10 @@
+
 #!/bin/bash
+
+# Install Git
+sudo yum -y install git
+
+echo "Installing Node.js and npm..."#!/bin/bash
 
 # Update OS
 yum update -y
@@ -20,14 +26,7 @@ if [ "$(id -u)" != "0" ]; then
   exit 1
 fi
 
-# Writing node config to script
-cat << 'EOF' > /home/ec2-user/start_app.sh
-#!/bin/bash
 
-# Install Git
-sudo yum -y install git
-
-echo "Installing Node.js and npm..."
 sudo yum -y install nodejs
 sudo npm install @hapi/hapi
 echo "Node.js and npm installation complete."
@@ -83,28 +82,3 @@ ENV_EOF
 # Start the server
 echo "NPM Run start"
 sudo npm run start
-EOF
-
-FILE="/home/ec2-user/start_app.sh"
-
-waited=0
-timeout=30
-# Check if the file exists, and if not, wait and check again
-while [ ! -f "$FILE" ]; do
-    echo "File $FILE not found. Waiting..."
-    sleep 5
-    waited=$((waited + 5))
-    if [ "$waited" -ge "$timeout"]; then
-        echo "No start_app.sh created. Timeout."
-        exit 1
-    fi
-done
-
-echo "Start_app.sh created. Adding permissions"
-chmod +x /home/ec2-user/start_app.sh
-
-# Ensure correct ownership and permissions
-chown ec2-user:ec2-user /home/ec2-user/start_app.sh
-
-echo "STARTING start_app.sh"
-su - ec2-user -c "/home/ec2-user/start_app.sh"
