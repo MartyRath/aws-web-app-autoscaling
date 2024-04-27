@@ -48,6 +48,15 @@ resource "aws_security_group" "web_server_sg" {
   description = "Security group for web servers"
   vpc_id      = module.vpc.vpc_id
 
+  #TEST
+  # Allow Mongo traffic from web server
+  ingress {
+    from_port       = 27017
+    to_port         = 27017
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
   # Allows SSH traffic
   ingress {
     from_port       = 22

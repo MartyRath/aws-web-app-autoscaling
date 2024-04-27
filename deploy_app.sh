@@ -1,18 +1,26 @@
 #!/bin/bash
 
+# Check if script is running as root
+if [ "$(id -u)" != "0" ]; then
+  echo "This script must be run as root" 1>&2
+  exit 1
+fi
+
 # Writing node config to script
 cat << 'EOF' > /home/ec2-user/start_app.sh
 #!/bin/bash
 
 # Install Git
-yum -y install git
+sudo yum -y install git
 
 echo "Installing Node.js and npm..."
-yum -y install nodejs
-npm install @hapi/hapi
+sudo yum -y install nodejs
+sudo npm install @hapi/hapi
 echo "Node.js and npm installation complete."
 
 # Write MongoDB config to mongodb-org file
+sudo touch /etc/yum.repos.d/mongodb-org-7.0.repo
+sudo chmod +rw /etc/yum.repos.d/mongodb-org-7.0.repo
 echo "[mongodb-org-7.0]" > /etc/yum.repos.d/mongodb-org-7.0.repo
 echo "name=MongoDB Repository" >> /etc/yum.repos.d/mongodb-org-7.0.repo
 echo "baseurl=https://repo.mongodb.org/yum/amazon/2023/mongodb-org/7.0/x86_64/" >> /etc/yum.repos.d/mongodb-org-7.0.repo
@@ -20,42 +28,68 @@ echo "gpgcheck=1" >> /etc/yum.repos.d/mongodb-org-7.0.repo
 echo "enabled=1" >> /etc/yum.repos.d/mongodb-org-7.0.repo
 echo "gpgkey=https://pgp.mongodb.com/server-7.0.asc" >> /etc/yum.repos.d/mongodb-org-7.0.repo
 
-# Install MongoDB
+# Install MongoDB, use sudo as not running from root
 echo "Installing MongoDB"
-yum install -y mongodb-org
+sudo yum install -y mongodb-org
 
-echo "STARTING APP"
+echo "Starting Mongo"
 
 # Enable and start mongod service
 echo "Enabling MongoDB"
-systemctl enable mongod
+sudo systemctl enable mongod
 echo "Starting MongoDB"
-systemctl start mongod
+sudo systemctl start mongod
 
 # Clone the Playtime app repository
 echo "CLONING PLAYTIME"
-git clone https://github.com/wit-hdip-comp-sci-2023/playtime.git
+sudo git clone https://github.com/wit-hdip-comp-sci-2023/playtime.git
 echo "Changing to Playtime directory"
-cd playtime/
+
+if [ -d "playtime" ]; then
+  cd playtime/
+  echo "Changed to 'playtime' directory."
+else
+  echo "'playtime' directory does not exist."
+  exit 1
+fi
 
 # Install npm dependencies
 echo "Installing dependencies"
-npm install
+sudo npm install
 
 # Copy .env file
 echo "Copying .env file stuff"
-cp .env_example .env
+sudo cp .env_example .env
+sudo chmod +rw .env
 echo "cookie_name=playlist" > .env
 echo "cookie_password=secretpasswordnotrevealedtoanyone" >> .env
 echo "db=mongodb://127.0.0.1:27017/playtime?directConnection=true" >> .env
 
 # Start the server
 echo "NPM Run start"
-npm run start
+sudo npm run start
 EOF
 
-echo "Adding permissions"
+FILE="/home/ec2-user/start_app.sh"
+
+waited=0
+timeout=30
+# Check if the file exists, and if not, wait and check again
+while [ ! -f "$FILE" ]; do
+    echo "File $FILE not found. Waiting..."
+    sleep 5
+    waited=$((waited + 5))
+    if [ "$waited" -ge "$timeout"]; then
+        echo "No start_app.sh created. Timeout."
+        exit 1
+    fi
+done
+
+echo "Sstart_app.sh created. Adding permissions"
 chmod +x /home/ec2-user/start_app.sh
 
+# Ensure correct ownership and permissions
+chown ec2-user:ec2-user /home/ec2-user/start_app.sh
+
 echo "STARTING start_app.sh"
-/home/ec2-user/start_app.sh
+su - ec2-user -c "/home/ec2-user/start_app.sh"
