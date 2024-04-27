@@ -1,5 +1,19 @@
 #!/bin/bash
 
+# Update OS
+yum update -y
+# Install Apache web server
+yum install httpd -y
+# Enable and start Apache
+systemctl enable httpd
+systemctl start httpd
+# Add webpage with instance metadata
+echo "<b>Instance ID:</b> " > /var/www/html/id.html
+TOKEN=`curl -X PUT "http://169.254.169.254/latest/api/token" \
+-H "X-aws-ec2-metadata-token-ttl-seconds: 21600"`
+curl -H "X-aws-ec2-metadata-token: $TOKEN" \
+http://169.254.169.254/latest/meta-data/instance-id/ >> /var/www/html/id.html
+
 # Check if script is running as root
 if [ "$(id -u)" != "0" ]; then
   echo "This script must be run as root" 1>&2
@@ -19,14 +33,13 @@ sudo npm install @hapi/hapi
 echo "Node.js and npm installation complete."
 
 # Write MongoDB config to mongodb-org file
-sudo touch /etc/yum.repos.d/mongodb-org-7.0.repo
-sudo chmod +rw /etc/yum.repos.d/mongodb-org-7.0.repo
-echo "[mongodb-org-7.0]" > /etc/yum.repos.d/mongodb-org-7.0.repo
-echo "name=MongoDB Repository" >> /etc/yum.repos.d/mongodb-org-7.0.repo
-echo "baseurl=https://repo.mongodb.org/yum/amazon/2023/mongodb-org/7.0/x86_64/" >> /etc/yum.repos.d/mongodb-org-7.0.repo
-echo "gpgcheck=1" >> /etc/yum.repos.d/mongodb-org-7.0.repo
-echo "enabled=1" >> /etc/yum.repos.d/mongodb-org-7.0.repo
-echo "gpgkey=https://pgp.mongodb.com/server-7.0.asc" >> /etc/yum.repos.d/mongodb-org-7.0.repo
+echo "[mongodb-org-7.0]" | sudo tee /etc/yum.repos.d/mongodb-org-7.0.repo >/dev/null
+echo "name=MongoDB Repository" | sudo tee -a /etc/yum.repos.d/mongodb-org-7.0.repo >/dev/null
+echo "baseurl=https://repo.mongodb.org/yum/amazon/2023/mongodb-org/7.0/x86_64/" | sudo tee -a /etc/yum.repos.d/mongodb-org-7.0.repo >/dev/null
+echo "gpgcheck=1" | sudo tee -a /etc/yum.repos.d/mongodb-org-7.0.repo >/dev/null
+echo "enabled=1" | sudo tee -a /etc/yum.repos.d/mongodb-org-7.0.repo >/dev/null
+echo "gpgkey=https://pgp.mongodb.com/server-7.0.asc" | sudo tee -a /etc/yum.repos.d/mongodb-org-7.0.repo >/dev/null
+
 
 # Install MongoDB, use sudo as not running from root
 echo "Installing MongoDB"
@@ -57,13 +70,15 @@ fi
 echo "Installing dependencies"
 sudo npm install
 
-# Copy .env file
-echo "Copying .env file stuff"
+
 sudo cp .env_example .env
 sudo chmod +rw .env
-echo "cookie_name=playlist" > .env
-echo "cookie_password=secretpasswordnotrevealedtoanyone" >> .env
-echo "db=mongodb://127.0.0.1:27017/playtime?directConnection=true" >> .env
+sudo tee .env << ENV_EOF
+cookie_name=playlist
+cookie_password=secretpasswordnotrevealedtoanyone
+db=mongodb://127.0.0.1:27017/playtime?directConnection=true
+ENV_EOF
+
 
 # Start the server
 echo "NPM Run start"
@@ -85,7 +100,7 @@ while [ ! -f "$FILE" ]; do
     fi
 done
 
-echo "Sstart_app.sh created. Adding permissions"
+echo "Start_app.sh created. Adding permissions"
 chmod +x /home/ec2-user/start_app.sh
 
 # Ensure correct ownership and permissions
