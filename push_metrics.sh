@@ -1,5 +1,11 @@
 #!/bin/bash
 
+TOKEN=$(curl -s -X PUT "http://169.254.169.254/latest/api/token" -H "X-aws-ec2-metadata-token-ttl-seconds: 21600")
+INSTANCE_ID=$(curl -s -H "X-aws-ec2-metadata-token: $TOKEN" http://169.254.169.254/latest/meta-data/instance-id)
+
+# Add webpage with instance metadata to id.html. This is done for each template to update the instance ID.
+echo "<b>Instance ID:</b> $INSTANCE_ID" > /var/www/html/id.html
+
 # Write the custom metrics script to a file
 cat << 'EOF' > /home/ec2-user/custom_metrics.sh
 #!/bin/bash

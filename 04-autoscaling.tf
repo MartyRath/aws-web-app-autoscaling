@@ -18,12 +18,17 @@ resource "aws_launch_template" "web_server_template" {
     enabled = true
   }
 
+  # To be used to push custom metrics to CloudWatch
   iam_instance_profile {
     name = "LabInstanceProfile"
   }
 
   # Runs custom metrics script
   user_data = filebase64("${path.module}/push_metrics.sh")
+
+  tags = {
+    Name = "My Launch Template"
+  }
 
 }
 
@@ -33,7 +38,7 @@ resource "aws_autoscaling_group" "web_server_asg" {
   name                      = "web-server-asg"
   max_size                  = 3
   min_size                  = 1
-  desired_capacity          = 1
+  desired_capacity          = 2
   vpc_zone_identifier       = module.vpc.public_subnets               # Public subnet ids
   target_group_arns         = [aws_lb_target_group.web_server_tg.arn] # Attach to load balancer target group
   health_check_grace_period = 30                                      # Default 300

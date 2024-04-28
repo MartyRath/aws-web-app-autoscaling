@@ -1,6 +1,5 @@
 #!/bin/bash
-# Description: Step 6 - Generates test traffic to the load balancer to show 
-#              effectiveness and autoscaling
+# Description: Step 6 - Generates test traffic to the load balancer.
 
 # Prompt user to enter the DNS name of the load balancer
 read -p "Enter the DNS name of the load balancer: " LB_DNS_NAME

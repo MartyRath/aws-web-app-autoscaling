@@ -128,9 +128,7 @@ resource "aws_security_group" "mongo_sg" {
     from_port   = 22
     to_port     = 22
     protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-    # Can just allow from bastion
-    #security_groups = [aws_security_group.bastion_sg.id]
+    security_groups = [aws_security_group.bastion_sg.id]
   }
 
   # Allow Mongo traffic from web server security group
