@@ -42,10 +42,21 @@ sudo cat << 'EOF' > /home/ec2-user/start_app.sh
 echo "Installing MongoDB"
 sudo yum install -y mongodb-org
 
-# Enable and start mongod service.
-echo "Enabling MongoDB"
-sudo systemctl enable mongod
-echo "Starting MongoDB"
+# Enable mongod service.
+echo "Attempting to enable Mongod service"
+if sudo systemctl enable mongod; then
+  echo "Mongod service successfully enabled"
+else
+  echo "Mongod service failed. Reinstalling MongoDB"
+  # Clean install if previous attempt failed.
+  sudo yum remove mongodb-org mongodb-org-server mongodb-org-shell mongodb-org-mongos mongodb-org-tools
+  sudo yum clean all
+  sudo yum install -y mongodb-org
+  sudo yum install -y mongodb-org
+  sudo systemctl enable mongod
+fi
+
+echo "Starting Mongod service"
 sudo systemctl start mongod
 
 # Clone the Playtime app repository
