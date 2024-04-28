@@ -1,37 +1,31 @@
-
 #!/bin/bash
-
-# Install Git
-sudo yum -y install git
-
-echo "Installing Node.js and npm..."#!/bin/bash
+# Description: This script writes the required set up for the playtime web application to start_app.sh.
+#               It also configures a static web page id.html with the instance id.
 
 # Update OS
 yum update -y
-# Install Apache web server
+
+# Install Git
+yum -y install git
+
+# Install/enable and start Apache web server
 yum install httpd -y
-# Enable and start Apache
 systemctl enable httpd
 systemctl start httpd
-# Add webpage with instance metadata
+
+# Add webpage with instance metadata to id.html
 echo "<b>Instance ID:</b> " > /var/www/html/id.html
 TOKEN=`curl -X PUT "http://169.254.169.254/latest/api/token" \
 -H "X-aws-ec2-metadata-token-ttl-seconds: 21600"`
 curl -H "X-aws-ec2-metadata-token: $TOKEN" \
 http://169.254.169.254/latest/meta-data/instance-id/ >> /var/www/html/id.html
 
-# Check if script is running as root
-if [ "$(id -u)" != "0" ]; then
-  echo "This script must be run as root" 1>&2
-  exit 1
-fi
-
-
-sudo yum -y install nodejs
-sudo npm install @hapi/hapi
+# Installation for web application
+yum -y install nodejs
+npm install @hapi/hapi
 echo "Node.js and npm installation complete."
 
-# Write MongoDB config to mongodb-org file
+# Write MongoDB config to mongodb-org file. Supressing permission errors, file is being configured correctly.
 echo "[mongodb-org-7.0]" | sudo tee /etc/yum.repos.d/mongodb-org-7.0.repo >/dev/null
 echo "name=MongoDB Repository" | sudo tee -a /etc/yum.repos.d/mongodb-org-7.0.repo >/dev/null
 echo "baseurl=https://repo.mongodb.org/yum/amazon/2023/mongodb-org/7.0/x86_64/" | sudo tee -a /etc/yum.repos.d/mongodb-org-7.0.repo >/dev/null
@@ -39,37 +33,41 @@ echo "gpgcheck=1" | sudo tee -a /etc/yum.repos.d/mongodb-org-7.0.repo >/dev/null
 echo "enabled=1" | sudo tee -a /etc/yum.repos.d/mongodb-org-7.0.repo >/dev/null
 echo "gpgkey=https://pgp.mongodb.com/server-7.0.asc" | sudo tee -a /etc/yum.repos.d/mongodb-org-7.0.repo >/dev/null
 
+# Write web application and mongo database configuration to start_app.sh script
+sudo cat << 'EOF' > /home/ec2-user/start_app.sh
+#!/bin/bash
 
-# Install MongoDB, use sudo as not running from root
+# Install MongoDB, use sudo as not running from root.
+# NOTE: This is the last echoed message from this script when attempting to run on start up from user_data
 echo "Installing MongoDB"
 sudo yum install -y mongodb-org
 
-echo "Starting Mongo"
-
-# Enable and start mongod service
+# Enable and start mongod service.
 echo "Enabling MongoDB"
 sudo systemctl enable mongod
 echo "Starting MongoDB"
 sudo systemctl start mongod
 
 # Clone the Playtime app repository
-echo "CLONING PLAYTIME"
+echo "Cloning playtime from github"
 sudo git clone https://github.com/wit-hdip-comp-sci-2023/playtime.git
-echo "Changing to Playtime directory"
 
+echo "Changing to Playtime directory"
+# Error handling if playtime clone failed
 if [ -d "playtime" ]; then
   cd playtime/
-  echo "Changed to 'playtime' directory."
+  echo "Changed to playtime directory."
 else
-  echo "'playtime' directory does not exist."
+  echo "playtime directory does not exist."
   exit 1
 fi
 
-# Install npm dependencies
-echo "Installing dependencies"
+# Install web application dependencies
+echo "Installing playtime dependencies"
 sudo npm install
 
-
+# Configuring .env file
+echo "Congfiguring .env file"
 sudo cp .env_example .env
 sudo chmod +rw .env
 sudo tee .env << ENV_EOF
@@ -78,7 +76,36 @@ cookie_password=secretpasswordnotrevealedtoanyone
 db=mongodb://127.0.0.1:27017/playtime?directConnection=true
 ENV_EOF
 
-
-# Start the server
-echo "NPM Run start"
+# Start app
 sudo npm run start
+EOF
+
+#################################################################################
+# Attempting to start applcation automatically via user data. Not working.
+# Mongo installed before SIGTERM recieved for rest of start_app.sh. Cause unknown
+#################################################################################
+
+# Check if start_app.sh exists, and if not, wait and check again
+FILE="/home/ec2-user/start_app.sh"
+waited=0
+timeout=30
+while [ ! -f "$FILE" ]; do
+    echo "File $FILE not found. Waiting..."
+    sleep 5
+    waited=$((waited + 5))
+    if [ "$waited" -ge "$timeout"]; then
+        echo "No start_app.sh created. Timeout."
+        exit 1
+    fi
+done
+
+# Adding permissions to start_app.sh
+echo "Start_app.sh created. Adding permissions"
+chmod +x /home/ec2-user/start_app.sh
+
+# Ensure correct ownership and permissions
+chown ec2-user:ec2-user /home/ec2-user/start_app.sh
+
+# Attemping to start app from user data
+echo "Starting start_app.sh"
+su - ec2-user -c "/home/ec2-user/start_app.sh"

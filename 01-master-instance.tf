@@ -38,6 +38,11 @@ resource "aws_instance" "main_web_server" {
   tags = {
     Name = "Main Web Server"
   }
+
+  # Prevents terraform from destroying resource in order to install web app
+  #lifecycle {
+  #  prevent_destroy = true
+  #}
 }
 
 ####################### 3. Custom AMI ############################################################
