@@ -14,11 +14,9 @@ systemctl enable httpd
 systemctl start httpd
 
 # Add webpage with instance metadata to id.html
-echo "<b>Instance ID:</b> " > /var/www/html/id.html
-TOKEN=`curl -X PUT "http://169.254.169.254/latest/api/token" \
--H "X-aws-ec2-metadata-token-ttl-seconds: 21600"`
-curl -H "X-aws-ec2-metadata-token: $TOKEN" \
-http://169.254.169.254/latest/meta-data/instance-id/ >> /var/www/html/id.html
+TOKEN=$(curl -s -X PUT "http://169.254.169.254/latest/api/token" -H "X-aws-ec2-metadata-token-ttl-seconds: 21600")
+INSTANCE_ID=$(curl -s -H "X-aws-ec2-metadata-token: $TOKEN" http://169.254.169.254/latest/meta-data/instance-id)
+echo "<b>Instance ID:</b> $INSTANCE_ID" > /var/www/html/id.html
 
 # Installation for web application
 yum -y install nodejs
@@ -49,7 +47,7 @@ if sudo systemctl enable mongod; then
 else
   echo "Mongod service failed. Reinstalling MongoDB"
   # Clean install if previous attempt failed.
-  sudo yum remove mongodb-org mongodb-org-server mongodb-org-shell mongodb-org-mongos mongodb-org-tools
+  sudo yum -y remove mongodb-org mongodb-org-server mongodb-org-shell mongodb-org-mongos mongodb-org-tools
   sudo yum clean all
   sudo yum install -y mongodb-org
   sudo yum install -y mongodb-org

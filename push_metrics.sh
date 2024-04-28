@@ -25,7 +25,6 @@ TCP_CONN_PORT_80=$(netstat -an | grep 80 | wc -l)
 IO_WAIT=$(iostat | awk 'NR==4 {print $5}')
 PROCESS_COUNT=$(ps aux | wc -l)
 
-
 # Added error handling for AWS CLI commands
 if ! aws cloudwatch put-metric-data --metric-name memory-usage --dimensions Instance=$INSTANCE_ID --namespace "2804Custom" --value $USEDMEMORY; then
     echo "Error pushing memory usage metric to CloudWatch"

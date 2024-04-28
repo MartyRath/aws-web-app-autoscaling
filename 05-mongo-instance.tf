@@ -11,10 +11,6 @@ resource "aws_instance" "mongo_instance" {
 
   key_name = "firstLabKey"
 
-  # Running scripts to install/enable/start Apache web servers, and push custom metrics to CloudWatch
-
-  user_data = file("${path.module}/web_server.sh")
-
   tags = {
     Name = "Mongo Database"
   }
