@@ -27,16 +27,16 @@ PROCESS_COUNT=$(ps aux | wc -l)
 
 
 # Added error handling for AWS CLI commands
-if ! aws cloudwatch put-metric-data --metric-name memory-usage --dimensions Instance=$INSTANCE_ID --namespace "2304Custom" --value $USEDMEMORY; then
+if ! aws cloudwatch put-metric-data --metric-name memory-usage --dimensions Instance=$INSTANCE_ID --namespace "2804Custom" --value $USEDMEMORY; then
     echo "Error pushing memory usage metric to CloudWatch"
 fi
-if ! aws cloudwatch put-metric-data --metric-name Tcp_connections --dimensions Instance=$INSTANCE_ID --namespace "2304Custom" --value $TCP_CONN; then
+if ! aws cloudwatch put-metric-data --metric-name Tcp_connections --dimensions Instance=$INSTANCE_ID --namespace "2804Custom" --value $TCP_CONN; then
     echo "Error pushing TCP connections metric to CloudWatch"
 fi
-if ! aws cloudwatch put-metric-data --metric-name TCP_connection_on_port_80 --dimensions Instance=$INSTANCE_ID --namespace "2304Custom" --value $TCP_CONN_PORT_80; then
+if ! aws cloudwatch put-metric-data --metric-name TCP_connection_on_port_80 --dimensions Instance=$INSTANCE_ID --namespace "2804Custom" --value $TCP_CONN_PORT_80; then
     echo "Error pushing TCP connections on port 80 metric to CloudWatch"
 fi
-if ! aws cloudwatch put-metric-data --metric-name IO_WAIT --dimensions Instance=$INSTANCE_ID --namespace "2304Custom" --value $IO_WAIT; then
+if ! aws cloudwatch put-metric-data --metric-name IO_WAIT --dimensions Instance=$INSTANCE_ID --namespace "2804Custom" --value $IO_WAIT; then
     echo "Error pushing IO wait metric to CloudWatch"
 fi
 EOF
