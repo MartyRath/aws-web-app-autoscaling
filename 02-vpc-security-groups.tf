@@ -11,7 +11,7 @@ module "vpc" {
   name = "myVPC"
   cidr = "10.0.0.0/16"
 
-  # Availability zones to be used
+  # Availability zones
   azs = ["us-east-1a", "us-east-1b", "us-east-1c"]
 
   # Creating three public and three private subnets in three availability zones
@@ -40,6 +40,7 @@ module "vpc" {
 # 1. Web Server SG
 # 2. Bastion SG
 # 3. Database SG
+# 4. Mongo SG
 
 # Web server security group for instances in public subnets.
 # Allows SSH, HTTP, HTTPS and custom TCP traffic from any IP address
@@ -48,20 +49,11 @@ resource "aws_security_group" "web_server_sg" {
   description = "Security group for web servers"
   vpc_id      = module.vpc.vpc_id
 
-  #TEST
-  # Allow Mongo traffic from web server
-  ingress {
-    from_port       = 27017
-    to_port         = 27017
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
   # Allows SSH traffic
   ingress {
-    from_port       = 22
-    to_port         = 22
-    protocol        = "tcp"
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
 
@@ -170,9 +162,9 @@ resource "aws_security_group" "mongo_sg" {
 
   # Allow SSH from anywhere / Bastion
   ingress {
-    from_port       = 22
-    to_port         = 22
-    protocol        = "tcp"
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
     # Can just allow from bastion
     #security_groups = [aws_security_group.bastion_sg.id]
@@ -180,9 +172,9 @@ resource "aws_security_group" "mongo_sg" {
 
   # Allow Mongo traffic from web server
   ingress {
-    from_port       = 27017
-    to_port         = 27017
-    protocol    = "tcp"
+    from_port = 27017
+    to_port   = 27017
+    protocol  = "tcp"
     # Only allow access from web server security group, node app
     security_groups = [aws_security_group.web_server_sg.id]
   }

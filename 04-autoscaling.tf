@@ -6,12 +6,13 @@
 # 4. CloudWatch Alarms
 
 ########################### 1. Launch Template #################################################
-# Creation of launch template based on custom AMI. No key pair added/needed.
+# Creation of launch template based on custom AMI. (see 01-master-instance.tf)
 resource "aws_launch_template" "web_server_template" {
   image_id               = aws_ami_from_instance.custom_ami.id # Uses custom AMI
   instance_type          = "t2.nano"
   vpc_security_group_ids = [aws_security_group.web_server_sg.id] # Define security grou
-  key_name = "firstLabKey"
+  key_name               = "firstLabKey"                         # Key pair for SSH access
+
   # Enables detailed monitoring every minute instead of 5 mins
   monitoring {
     enabled = true
@@ -21,6 +22,7 @@ resource "aws_launch_template" "web_server_template" {
     name = "LabInstanceProfile"
   }
 
+  # Runs custom metrics script
   user_data = filebase64("${path.module}/push_metrics.sh")
 
 }
@@ -31,7 +33,7 @@ resource "aws_autoscaling_group" "web_server_asg" {
   name                      = "web-server-asg"
   max_size                  = 3
   min_size                  = 1
-  desired_capacity          = 1                                       
+  desired_capacity          = 1
   vpc_zone_identifier       = module.vpc.public_subnets               # Public subnet ids
   target_group_arns         = [aws_lb_target_group.web_server_tg.arn] # Attach to load balancer target group
   health_check_grace_period = 30                                      # Default 300
@@ -55,7 +57,8 @@ resource "aws_autoscaling_group" "web_server_asg" {
 # Policies include:
 # 1. Scale out on high CPU
 # 2. Scale in on low CPU
-# Create simple(default) scaling policy to scale out on high CPU
+
+# 1. Create simple(default) scaling policy to scale out on high CPU
 resource "aws_autoscaling_policy" "scale_out_high_CPU_asp" {
   name                   = "scale-out-high-CPU-asp"
   scaling_adjustment     = 1                  # Adds one instance
@@ -64,7 +67,7 @@ resource "aws_autoscaling_policy" "scale_out_high_CPU_asp" {
   autoscaling_group_name = aws_autoscaling_group.web_server_asg.name
 }
 
-# Create a scaling policy to scale in on low CPU
+# 2. Create a scaling policy to scale in on low CPU
 resource "aws_autoscaling_policy" "scale_in_low_CPU_asp" {
   name                   = "scale-in-low-CPU-asp"
   scaling_adjustment     = -1 # Removes one instance
@@ -77,7 +80,8 @@ resource "aws_autoscaling_policy" "scale_in_low_CPU_asp" {
 # Alarms include:
 # 1. High CPU
 # 2. Low CPU
-# Alarm triggered when CPU usage exceeds 40% for 1 minute. No SNS set up
+
+# 1. Alarm triggered when CPU usage exceeds 40% for 1 minute. No SNS set up
 resource "aws_cloudwatch_metric_alarm" "high_CPU_alarm" {
   alarm_name          = "high-CPU-alarm"
   comparison_operator = "GreaterThanOrEqualToThreshold"
@@ -93,7 +97,7 @@ resource "aws_cloudwatch_metric_alarm" "high_CPU_alarm" {
   alarm_actions = [aws_autoscaling_policy.scale_out_high_CPU_asp.arn]
 }
 
-# Alarm triggered when CPU usage is below 20% for 1 minute.
+# 2. Alarm triggered when CPU usage is below 20% for 1 minute.
 resource "aws_cloudwatch_metric_alarm" "low_CPU_alarm" {
   alarm_name          = "low-CPU-alarm"
   comparison_operator = "LessThanOrEqualToThreshold"

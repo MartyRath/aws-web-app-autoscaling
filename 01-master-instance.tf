@@ -27,19 +27,16 @@ resource "aws_instance" "main_web_server" {
   subnet_id              = module.vpc.public_subnets[0] # Creates instance in first available VPC subnet
   vpc_security_group_ids = [aws_security_group.web_server_sg.id]
   iam_instance_profile   = "LabInstanceProfile" # To be used to push custom metrics to CloudWatch
+  key_name               = "firstLabKey"        # Key name for ssh
 
-  # KEY NAme for ssh
-  key_name = "firstLabKey"
-
-  # Running scripts to install/enable/start Apache web servers, and push custom metrics to CloudWatch
-
+  # Running script to upload start_app.sh script with web application config, and create static web page id.html
   user_data = file("${path.module}/deploy_app.sh")
 
   tags = {
     Name = "Main Web Server"
   }
 
-  # Prevents terraform from destroying resource in order to install web app
+  # Prevents terraform from destroying resource in order to install web app via SSH
   #lifecycle {
   #  prevent_destroy = true
   #}
@@ -55,5 +52,3 @@ resource "aws_ami_from_instance" "custom_ami" {
     Name = "Custom Web Server AMI"
   }
 }
-
-
