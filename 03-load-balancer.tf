@@ -8,7 +8,7 @@
 # Creating an instance target group to be used with application load balancer.
 resource "aws_lb_target_group" "web_server_tg" {
   name        = "web-server-tg"
-  port        = 80
+  port        = 3000 # Changed to forward traffic from 80 to 3000 node app
   protocol    = "HTTP"
   target_type = "instance"
   vpc_id      = module.vpc.vpc_id #ID of custom VPC
@@ -46,7 +46,7 @@ resource "aws_lb_listener" "http_listener" {
 #  ssl_policy        = "ELBSecurityPolicy-2016-08"
 #  certificate_arn   = "INSERT_CERT_ARN_HERE"
 
-# Forward to target group
+ # Forward to target group
 #  default_action {
 #    type             = "forward"
 #    target_group_arn = aws_lb_target_group.web_server_tg.arn

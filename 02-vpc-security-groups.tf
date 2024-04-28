@@ -123,7 +123,7 @@ resource "aws_security_group" "mongo_sg" {
   description = "Security group for mongo servers"
   vpc_id      = module.vpc.vpc_id
 
-  # Allow SSH from anywhere / Bastion
+  # Allow SSH from Bastion
   ingress {
     from_port   = 22
     to_port     = 22

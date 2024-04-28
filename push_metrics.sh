@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# Installing cron to run custom metrics script every minute
+sudo yum install cronie cronie-anacron
+
 TOKEN=$(curl -s -X PUT "http://169.254.169.254/latest/api/token" -H "X-aws-ec2-metadata-token-ttl-seconds: 21600")
 INSTANCE_ID=$(curl -s -H "X-aws-ec2-metadata-token: $TOKEN" http://169.254.169.254/latest/meta-data/instance-id)
 
@@ -44,4 +47,10 @@ EOF
 chmod +x /home/ec2-user/custom_metrics.sh
 
 # Add a cron job to run the script every minute
-echo "* * * * * /home/ec2-user/custom_metrics.sh >> /var/log/custom_metrics.log 2>&1" | crontab -
+# Set editor to nano
+export EDITOR=nano
+
+# Add the cron job to crontab
+(crontab -l ; echo "*/1 * * * * /home/ec2-user/mem.sh") | crontab -
+
+echo "Cron job added sucessfully"
