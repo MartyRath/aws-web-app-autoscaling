@@ -8,9 +8,9 @@
 ########################### 1. Launch Template #################################################
 # Creation of launch template based on custom AMI. (see 01-master-instance.tf)
 resource "aws_launch_template" "web_server_template" {
-  image_id               = aws_ami_from_instance.custom_ami.id # Uses custom AMI
+  image_id               = "ami-05f8f6156bbb015e2" # Uses custom AMI with local mongodb
   instance_type          = "t2.nano"
-  vpc_security_group_ids = [aws_security_group.web_server_sg.id] # Define security grou
+  vpc_security_group_ids = [aws_security_group.web_server_sg.id] # Define security group
   key_name               = "firstLabKey"                         # Key pair for SSH access
 
   # Enables detailed monitoring every minute instead of 5 mins
@@ -23,8 +23,12 @@ resource "aws_launch_template" "web_server_template" {
     name = "LabInstanceProfile"
   }
 
-  # Runs custom metrics script
-  user_data = filebase64("${path.module}/push_metrics.sh")
+  # Starts node app for autoscaled instances
+  user_data = base64encode(<<-EOF
+  #!/bin/bash
+  su - ec2-user -c 'cd playtime; npm run start'
+  EOF
+  )
 
   tags = {
     Name = "My Launch Template"

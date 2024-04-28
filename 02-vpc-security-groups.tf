@@ -125,9 +125,9 @@ resource "aws_security_group" "mongo_sg" {
 
   # Allow SSH from Bastion
   ingress {
-    from_port   = 22
-    to_port     = 22
-    protocol    = "tcp"
+    from_port       = 22
+    to_port         = 22
+    protocol        = "tcp"
     security_groups = [aws_security_group.bastion_sg.id]
   }
 
