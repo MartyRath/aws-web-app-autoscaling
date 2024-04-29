@@ -23,7 +23,7 @@ yum -y install nodejs
 npm install @hapi/hapi
 echo "Node.js and npm installation complete."
 
-# Write MongoDB config to mongodb-org file. Supressing permission errors, file is being configured correctly.
+# Write MongoDB config to mongodb-org file. Tee adds to file (and output). Then, supressing permission errors, file is being configured correctly.
 echo "[mongodb-org-7.0]" | sudo tee /etc/yum.repos.d/mongodb-org-7.0.repo >/dev/null
 echo "name=MongoDB Repository" | sudo tee -a /etc/yum.repos.d/mongodb-org-7.0.repo >/dev/null
 echo "baseurl=https://repo.mongodb.org/yum/amazon/2023/mongodb-org/7.0/x86_64/" | sudo tee -a /etc/yum.repos.d/mongodb-org-7.0.repo >/dev/null
