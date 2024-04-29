@@ -41,7 +41,7 @@ resource "aws_launch_template" "web_server_template" {
 resource "aws_autoscaling_group" "web_server_asg" {
   name                      = "web-server-asg"
   max_size                  = 3
-  min_size                  = 1
+  min_size                  = 2 # Set to 2 to show load balancing
   desired_capacity          = 2
   vpc_zone_identifier       = module.vpc.public_subnets               # Public subnet ids
   target_group_arns         = [aws_lb_target_group.web_server_tg.arn] # Attach to load balancer target group
