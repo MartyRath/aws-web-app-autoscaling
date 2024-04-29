@@ -123,9 +123,9 @@ resource "aws_security_group" "bastion_sg" {
   }
 }
 
-############################MONGO#############################
+############################MONGO###################################################
 # 3. Mongo security group 
-# Allows SSH from bastion and mongo traffic from node app.
+# Allows SSH from bastion, mongo traffic from node app, and outbound to the internet.
 resource "aws_security_group" "mongo_sg" {
   name        = "mongo-sg"
   description = "Security group for mongo servers"
