@@ -109,7 +109,7 @@ resource "aws_security_group" "bastion_sg" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
-  # Allows outbound ssh traffic from anywhere
+  # Allows outbound ssh traffic
   egress {
     from_port   = 22
     to_port     = 22
@@ -146,6 +146,14 @@ resource "aws_security_group" "mongo_sg" {
     protocol  = "tcp"
     # Only allow access from web server security group, node app
     security_groups = [aws_security_group.web_server_sg.id]
+  }
+
+  # To allow the mongo server to access the internet via the NAT gateway
+  egress {
+  from_port       = 0
+  to_port         = 0
+  protocol        = "-1"
+  cidr_blocks     = ["0.0.0.0/0"]
   }
 
   tags = {
