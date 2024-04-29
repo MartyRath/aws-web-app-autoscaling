@@ -8,7 +8,7 @@
 ########################### 1. Launch Template #################################################
 # Creation of launch template based on custom AMI. (see 01-master-instance.tf)
 resource "aws_launch_template" "web_server_template" {
-  image_id               = "ami-0a50c26fc0de9cb6c" # Uses custom AMI with mongodb in separate instance
+  image_id               = "ami-05f8f6156bbb015e2" # Uses custom AMI with local mongodb
   instance_type          = "t2.nano"
   vpc_security_group_ids = [aws_security_group.web_server_sg.id] # Define security group
   key_name               = "firstLabKey"                         # Key pair for SSH access
