@@ -24,7 +24,7 @@ data "aws_ami" "most_recent_amazon_ami" {
 resource "aws_instance" "main_web_server" {
   ami                    = data.aws_ami.most_recent_amazon_ami.id
   instance_type          = "t2.nano"
-  subnet_id              = module.vpc.public_subnets[0] # Creates instance in first available VPC subnet
+  subnet_id              = module.vpc.public_subnets[0] # Creates instance in first available public VPC subnet
   vpc_security_group_ids = [aws_security_group.web_server_sg.id]
   iam_instance_profile   = "LabInstanceProfile" # To be used to push custom metrics to CloudWatch
   key_name               = "firstLabKey"        # Key name for ssh
